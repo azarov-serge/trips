@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>950679518718-lpgim5utq4k3ddrmdtet6vqmt4defb7h.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.950679518718-lpgim5utq4k3ddrmdtet6vqmt4defb7h</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBDnsTmaHyYrAuf3P6fdLfnyXQe821j1Hc</string>
+	<key>GCM_SENDER_ID</key>
+	<string>950679518718</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.trips</string>
+	<key>PROJECT_ID</key>
+	<string>trips-f9987</string>
+	<key>STORAGE_BUCKET</key>
+	<string>trips-f9987.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:950679518718:ios:79baedb2864c07c29094af</string>
+	<key>DATABASE_URL</key>
+	<string>https://trips-f9987.firebaseio.com</string>
+</dict>
+</plist>
