@@ -10,6 +10,12 @@ class UserPic extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Widget defaultUserPic = Icon(
+      CupertinoIcons.person_circle_fill,
+      size: size - 4,
+      color: CupertinoTheme.of(context).textTheme.textStyle.color,
+    );
+
     return Container(
       width: size,
       height: size,
@@ -22,13 +28,25 @@ class UserPic extends StatelessWidget {
       child: url != ''
           ? ClipRRect(
               borderRadius: BorderRadius.circular(size / 2),
-              child: Image.network(url),
+              child: Image.network(
+                url,
+                loadingBuilder: (BuildContext context, Widget child,
+                    ImageChunkEvent? loadingProgress) {
+                  if (loadingProgress == null) {
+                    return child;
+                  }
+
+                  return Center(
+                    child: CupertinoActivityIndicator(),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) => Container(
+                  child: defaultUserPic,
+                  margin: const EdgeInsets.only(top: 100),
+                ),
+              ),
             )
-          : Icon(
-              CupertinoIcons.person_circle_fill,
-              size: size - 1,
-              color: CupertinoTheme.of(context).textTheme.textStyle.color,
-            ),
+          : Center(child: defaultUserPic),
     );
   }
 }

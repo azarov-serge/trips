@@ -7,8 +7,6 @@ import 'widgets/widgets.dart';
 class SignUpPage extends StatelessWidget {
   const SignUpPage({Key? key}) : super(key: key);
 
-  static const routeName = 'sign-up';
-
   static Route route() {
     return CupertinoPageRoute<void>(builder: (_) => const SignUpPage());
   }
@@ -20,7 +18,7 @@ class SignUpPage extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: BlocProvider<SignUpCubit>(
-          create: (_) => SignUpCubit(context.read<AuthenticationService>()),
+          create: (_) => SignUpCubit(context.read<AuthService>()),
           child: SignUpForm(),
         ),
       ),
