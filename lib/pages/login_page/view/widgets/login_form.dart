@@ -17,10 +17,6 @@ class LoginForm extends StatelessWidget {
       ),
     );
 
-    final buttonDecoration = BoxDecoration(
-      border: Border.all(color: CupertinoTheme.of(context).primaryColor),
-    );
-
     return BlocListener<LoginCubit, LoginState>(
       listener: (context, state) {
         if (state.status.isSubmissionFailure) {
@@ -45,7 +41,7 @@ class LoginForm extends StatelessWidget {
                 focusNode: _passwordFocusNode,
               ),
               const SizedBox(height: 8.0),
-              _LoginButton(decoration: buttonDecoration),
+              const _LoginButton(),
               const SizedBox(height: 80),
               const _SignUpButton(),
             ],
@@ -63,7 +59,7 @@ class LoginForm extends StatelessWidget {
         content: Text(errorMessage),
         actions: [
           CupertinoDialogAction(
-            child: Text('OK'),
+            child: Text('Ok'),
             onPressed: () {
               Navigator.of(ctx).pop();
             },
@@ -165,11 +161,7 @@ class _PasswordInput extends StatelessWidget {
 }
 
 class _LoginButton extends StatelessWidget {
-  _LoginButton({
-    required this.decoration,
-  });
-
-  final BoxDecoration decoration;
+  const _LoginButton();
 
   @override
   Widget build(BuildContext context) {
@@ -180,9 +172,14 @@ class _LoginButton extends StatelessWidget {
             ? const CupertinoActivityIndicator()
             : Container(
                 width: double.infinity,
-                decoration: decoration,
                 child: CupertinoButton(
-                  child: Text('Log in'),
+                  color: CupertinoColors.activeBlue,
+                  child: Text(
+                    'Log in',
+                    style: TextStyle(
+                      color: CupertinoColors.white,
+                    ),
+                  ),
                   onPressed: state.status.isValidated
                       ? () => context.read<LoginCubit>().logInWithCredentials()
                       : null,

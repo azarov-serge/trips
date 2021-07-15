@@ -1,13 +1,12 @@
 import 'package:flutter/widgets.dart';
-import 'package:trips/app/app.dart';
+import 'package:trips/blocs/blocs.dart';
 import 'package:trips/pages/pages.dart';
 
-List<Page> onGenerateAppViewPages(AppStatus state, List<Page<dynamic>> pages) {
+List<Page> onGenerateAppViewPages(AuthStatus state, List<Page<dynamic>> pages) {
   switch (state) {
-    case AppStatus.authenticated:
+    case AuthStatus.authenticated:
       return [HomePage.page()];
-    // return [FollowingTripsScreen.page()];
-    case AppStatus.unauthenticated:
+    case AuthStatus.unauthenticated:
     default:
       return [LoginPage.page()];
   }

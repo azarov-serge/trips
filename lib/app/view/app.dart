@@ -3,23 +3,25 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flow_builder/flow_builder.dart';
 import 'package:trips/services/services.dart';
 import 'package:trips/app/app.dart';
+import 'package:trips/blocs/blocs.dart';
 
 class App extends StatelessWidget {
   const App({
     Key? key,
-    required AuthenticationService authenticationService,
-  })  : _authenticationService = authenticationService,
-        super(key: key);
+    required this.authService,
+    required this.usersService,
+  }) : super(key: key);
 
-  final AuthenticationService _authenticationService;
+  final AuthService authService;
+  final UsersService usersService;
 
   @override
   Widget build(BuildContext context) {
     return RepositoryProvider.value(
-      value: _authenticationService,
-      child: BlocProvider(
-        create: (_) => AppBloc(
-          authenticationService: _authenticationService,
+      value: authService,
+      child: BlocProvider<AuthBloc>(
+        create: (_) => AuthBloc(
+          authService: authService,
         ),
         child: const AppView(),
       ),
@@ -36,8 +38,8 @@ class AppView extends StatelessWidget {
       theme: CupertinoThemeData(
         brightness: Brightness.dark,
       ),
-      home: FlowBuilder<AppStatus>(
-        state: context.select((AppBloc bloc) => bloc.state.status),
+      home: FlowBuilder<AuthStatus>(
+        state: context.select((AuthBloc bloc) => bloc.state.status),
         onGeneratePages: onGenerateAppViewPages,
       ),
     );

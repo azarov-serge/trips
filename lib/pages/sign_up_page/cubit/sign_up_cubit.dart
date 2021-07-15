@@ -6,12 +6,10 @@ import 'package:trips/services/services.dart';
 
 part 'sign_up_state.dart';
 
-class SignUpError implements Exception {}
-
 class SignUpCubit extends Cubit<SignUpState> {
-  SignUpCubit(this._authenticationService) : super(const SignUpState());
+  SignUpCubit(this.autheService) : super(const SignUpState());
 
-  final AuthenticationService _authenticationService;
+  final AuthService autheService;
 
   void displayNameChanged(String value) {
     final displayName = Text.dirty(value);
@@ -72,7 +70,7 @@ class SignUpCubit extends Cubit<SignUpState> {
     }
     emit(state.copyWith(status: FormzStatus.submissionInProgress));
     try {
-      await _authenticationService.signUp(
+      await autheService.signUp(
         displayName: state.displayName.value,
         email: state.email.value,
         password: state.password.value,

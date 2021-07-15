@@ -19,10 +19,6 @@ class SignUpForm extends StatelessWidget {
       ),
     );
 
-    final buttonDecoration = BoxDecoration(
-      border: Border.all(color: CupertinoTheme.of(context).primaryColor),
-    );
-
     return BlocListener<SignUpCubit, SignUpState>(
       listener: (context, state) {
         if (state.status.isSubmissionFailure) {
@@ -57,7 +53,7 @@ class SignUpForm extends StatelessWidget {
               focusNode: _confirmPasswordFocusNode,
             ),
             const SizedBox(height: 8.0),
-            _SignUpButton(decoration: buttonDecoration),
+            _SignUpButton(),
           ],
         ),
       ),
@@ -72,7 +68,7 @@ class SignUpForm extends StatelessWidget {
         content: Text(errorMessage),
         actions: [
           CupertinoDialogAction(
-            child: Text('OK'),
+            child: Text('Ok'),
             onPressed: () {
               Navigator.of(ctx).pop();
             },
@@ -256,11 +252,7 @@ class _ConfirmPasswordInput extends StatelessWidget {
 }
 
 class _SignUpButton extends StatelessWidget {
-  _SignUpButton({
-    required this.decoration,
-  });
-
-  final BoxDecoration decoration;
+  const _SignUpButton();
 
   @override
   Widget build(BuildContext context) {
@@ -271,9 +263,12 @@ class _SignUpButton extends StatelessWidget {
             ? const CupertinoActivityIndicator()
             : Container(
                 width: double.infinity,
-                decoration: decoration,
                 child: CupertinoButton(
-                  child: Text('Sign up'),
+                  color: CupertinoColors.activeBlue,
+                  child: Text(
+                    'Sign up',
+                    style: TextStyle(color: CupertinoColors.white),
+                  ),
                   onPressed: !state.status.isValidated
                       ? null
                       : () => context.read<SignUpCubit>().signUpFormSubmitted(),

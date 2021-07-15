@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:trips/app/app.dart';
+import 'package:trips/blocs/blocs.dart';
+import 'package:trips/pages/pages.dart';
 import 'package:trips/widgets/widgets.dart';
 
 class HomePage extends StatelessWidget {
@@ -34,11 +35,14 @@ class HomePage extends StatelessWidget {
           case 0:
             return _buildSplashPage(context, 'Home');
           case 1:
-            return _buildSplashPage(context, 'Serach user');
+            return SearchPage();
           case 2:
             return _buildSplashPage(context, 'Add trip');
           case 3:
-            return _buildSplashPage(context, 'Profile');
+            final authUser =
+                context.select((AuthBloc bloc) => bloc.state.authUser);
+
+            return ProfilePage(userId: authUser.id);
           default:
             return _buildSplashPage(context, 'Home');
         }
@@ -55,7 +59,7 @@ class HomePage extends StatelessWidget {
           padding: EdgeInsets.all(5),
           child: Text('Log out'),
           onPressed: () {
-            context.read<AppBloc>().add(AppLogoutRequested());
+            context.read<AuthBloc>().add(AuthEventLogoutRequested());
           },
         ),
       ),

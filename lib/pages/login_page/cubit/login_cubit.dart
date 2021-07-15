@@ -7,9 +7,9 @@ import 'package:trips/services/services.dart';
 part 'login_state.dart';
 
 class LoginCubit extends Cubit<LoginState> {
-  LoginCubit(this._authenticationService) : super(const LoginState());
+  LoginCubit(this.autheService) : super(const LoginState());
 
-  final AuthenticationService _authenticationService;
+  final AuthService autheService;
 
   void emailChanged(String value) {
     final email = Email.dirty(value);
@@ -31,7 +31,7 @@ class LoginCubit extends Cubit<LoginState> {
     if (!state.status.isValidated) return;
     emit(state.copyWith(status: FormzStatus.submissionInProgress));
     try {
-      await _authenticationService.logInWithEmailAndPassword(
+      await autheService.logInWithEmailAndPassword(
         email: state.email.value,
         password: state.password.value,
       );

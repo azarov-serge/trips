@@ -1,19 +1,18 @@
 import 'dart:async';
 
 import 'package:meta/meta.dart';
-import 'package:firebase_auth/firebase_auth.dart' as firebaseAuth;
+import 'package:firebase_auth/firebase_auth.dart' as _firebaseAuth_;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cache/cache.dart';
 import 'package:trips/services/services.dart';
 
 /// Service which manages user authentication.
-class AuthenticationService {
-  AuthenticationService();
+class AuthService {
+  AuthService();
 
   final CacheClient _cache = CacheClient();
-  final firebaseAuth.FirebaseAuth _firebaseAuth =
-      firebaseAuth.FirebaseAuth.instance;
-  final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
+  final _firebaseAuth_.FirebaseAuth _firebaseAuth = firebaseAuth;
+  final FirebaseFirestore _firebaseFirestore = firebaseFirestore;
 
   /// User cache key.
   /// Should only be used for testing purposes.
@@ -22,6 +21,9 @@ class AuthenticationService {
 
   CollectionReference get _usersCollection =>
       _firebaseFirestore.collection('users');
+
+  CollectionReference get _followersCollection =>
+      _firebaseFirestore.collection('followers');
 
   /// Stream of [User] which will emit the current user when
   /// the authentication state changes.
@@ -34,6 +36,14 @@ class AuthenticationService {
       _cache.write(key: userCacheKey, value: user);
       return user;
     });
+  }
+
+  Future get following async {
+    final user = await authUser.first;
+
+    return await _followersCollection
+        .where('followerId', isEqualTo: user.id)
+        .get();
   }
 
   /// Returns the current cached user.
@@ -50,14 +60,14 @@ class AuthenticationService {
   }) async {
     try {
       await _firebaseAuth.createUserWithEmailAndPassword(
-        email: email,
+        email: email.toLowerCase(),
         password: password,
       );
 
       // Create data for user's profile
       final userData = <String, String>{
         'userId': _firebaseAuth.currentUser?.uid ?? '',
-        'email': email,
+        'email': email.toLowerCase(),
         'displayName': displayName,
         'photoUrl': '',
         'description': '',
@@ -76,7 +86,7 @@ class AuthenticationService {
   }) async {
     try {
       await _firebaseAuth.signInWithEmailAndPassword(
-        email: email,
+        email: email.toLowerCase(),
         password: password,
       );
     } catch (error) {
@@ -85,7 +95,7 @@ class AuthenticationService {
   }
 
   /// Signs out the current user which will emit
-  /// [User.empty] from the [user] Stream.
+  /// [AuthUser.empty] from the [user] Stream.
   Future<void> logOut() async {
     try {
       await Future.wait([
@@ -95,22 +105,9 @@ class AuthenticationService {
       throw Exception(error);
     }
   }
-
-  /// Search user by name in collection users
-  Future searchUserByName(String text) async {
-    try {
-      final result = await _firebaseFirestore
-          .collection('users')
-          .where('displayName', isEqualTo: text)
-          .get();
-      return result;
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
 }
 
-extension on firebaseAuth.User {
+extension on _firebaseAuth_.User {
   AuthUser get toAuthUser {
     return AuthUser(
       id: uid,
