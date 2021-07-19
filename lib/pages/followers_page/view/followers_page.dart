@@ -1,14 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:trips/services/services.dart';
 import 'package:trips/pages/pages.dart';
 import 'package:trips/widgets/widgets.dart';
 
-class FollowersPage extends StatefulWidget {
+class FollowersPage extends StatelessWidget {
   FollowersPage({
     Key? key,
     required this.usersService,
+    required this.userId,
     required this.usersIds,
     required this.title,
     this.isFollowers = false,
@@ -17,6 +17,7 @@ class FollowersPage extends StatefulWidget {
 
   static Page page({
     required UsersService usersService,
+    required String userId,
     required List<String> usersIds,
     required String title,
     bool? isFollowers,
@@ -25,6 +26,7 @@ class FollowersPage extends StatefulWidget {
       CupertinoPage<void>(
         child: FollowersPage(
           usersService: usersService,
+          userId: userId,
           usersIds: usersIds,
           title: title,
           isFollowers: isFollowers,
@@ -34,6 +36,7 @@ class FollowersPage extends StatefulWidget {
 
   static Route route({
     required UsersService usersService,
+    required String userId,
     required List<String> usersIds,
     required String title,
     bool? isFollowers,
@@ -42,6 +45,7 @@ class FollowersPage extends StatefulWidget {
     return CupertinoPageRoute<void>(
       builder: (_) => FollowersPage(
         usersService: usersService,
+        userId: userId,
         usersIds: usersIds,
         title: title,
         isFollowers: isFollowers,
@@ -51,56 +55,39 @@ class FollowersPage extends StatefulWidget {
   }
 
   final UsersService usersService;
+  final String userId;
   final List<String> usersIds;
   final String title;
   final bool? isFollowers;
   final bool? isAuthUser;
 
   @override
-  _FollowersPageState createState() => _FollowersPageState();
-}
-
-class _FollowersPageState extends State<FollowersPage> {
-  List<String> _usersIds = [];
-
-  @override
-  void initState() {
-    _usersIds = widget.usersIds;
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final Stream<QuerySnapshot> stream =
-        widget.usersService.getUsersListByIds(_usersIds);
+    final Stream<List<User>> stream = isFollowers == true
+        ? usersService.getFollowers(userId)
+        : usersService.getFollowing(userId);
 
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text(widget.title),
+        middle: Text(title),
       ),
-      child: StreamBuilder<QuerySnapshot>(
+      child: StreamBuilder<List<User>>(
         stream: stream,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(child: const TripsLoader());
           }
 
-          if (snapshot.data?.docs.length == 0) {
+          if (snapshot.data?.length == 0) {
             return Center(child: const Text('Users not found'));
           }
-
-          final usersData = snapshot.data!.docs;
 
           return Container(
             margin: EdgeInsets.fromLTRB(10, 20, 10, 10),
             child: ListView.builder(
-              itemCount: usersData.length,
+              itemCount: snapshot.data!.length,
               itemBuilder: (ctx, index) {
-                final user = User(
-                  userId: usersData[index]['userId'],
-                  email: usersData[index]['email'],
-                  displayName: usersData[index]['displayName'],
-                );
+                final user = snapshot.data![index];
 
                 final followerWidget = _Follower(
                   user: user,
@@ -108,7 +95,7 @@ class _FollowersPageState extends State<FollowersPage> {
                       .push(ProfilePage.route(userId: user.userId)),
                 );
 
-                return widget.isAuthUser == true
+                return isAuthUser == true
                     ? Dismissible(
                         key: Key(user.userId),
                         direction: DismissDirection.endToStart,
@@ -134,7 +121,7 @@ class _FollowersPageState extends State<FollowersPage> {
                             ],
                           ),
                         ),
-                        movementDuration: const Duration(milliseconds: 500),
+                        // movementDuration: const Duration(milliseconds: 500),
                         confirmDismiss: (direction) {
                           return showCupertinoDialog(
                             context: context,
@@ -143,8 +130,8 @@ class _FollowersPageState extends State<FollowersPage> {
                               actions: [
                                 CupertinoDialogAction(
                                   child: Text('Yes'),
-                                  onPressed: () {
-                                    _removeUser(user.userId);
+                                  onPressed: () async {
+                                    await _removeUser(user.userId);
                                     Navigator.of(ctx).pop(true);
                                   },
                                 ),
@@ -168,39 +155,12 @@ class _FollowersPageState extends State<FollowersPage> {
     );
   }
 
-  void _removeUser(String removedUserId) {
-    Function onRemove;
-
-    if (widget.isFollowers == true && widget.isAuthUser == true) {
-      onRemove = (String userId) => widget.usersService.removeFollower(userId);
+  Future<void> _removeUser(String removedUserId) async {
+    if (isFollowers == true && isAuthUser == true) {
+      await usersService.removeFollower(userId);
     } else {
-      onRemove = (String userId) => widget.usersService.removeFollowing(userId);
+      await usersService.removeFollowing(userId);
     }
-
-    onRemove(removedUserId).then((_) {
-      setState(() {
-        _usersIds =
-            _usersIds.where((element) => element != removedUserId).toList();
-      });
-    });
-  }
-
-  Future _showErrorAlert(BuildContext context, String errorMessage) {
-    return showCupertinoDialog(
-      context: context,
-      builder: (ctx) => CupertinoAlertDialog(
-        title: Text('Error'),
-        content: Text(errorMessage),
-        actions: [
-          CupertinoDialogAction(
-            child: Text('Ok'),
-            onPressed: () {
-              Navigator.of(ctx).pop();
-            },
-          ),
-        ],
-      ),
-    );
   }
 }
 
@@ -211,8 +171,8 @@ class _Follower extends StatelessWidget {
     required this.onViewProfile,
   }) : super(key: key);
 
-  User user;
-  Function onViewProfile;
+  final User user;
+  final Function onViewProfile;
 
   @override
   Widget build(BuildContext context) {
