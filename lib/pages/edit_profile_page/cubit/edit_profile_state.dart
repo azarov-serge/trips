@@ -1,6 +1,6 @@
 part of 'edit_profile_cubit.dart';
 
-enum LoadPhotoStatus {
+enum LoadUserPhotoStatus {
   initial,
   loadInProgress,
   loadSuccess,
@@ -11,7 +11,7 @@ class EditProfileState extends Equatable {
   const EditProfileState({
     this.displayName = const Text.pure(),
     this.description = '',
-    this.loadPhotoStatus = LoadPhotoStatus.initial,
+    this.loadPhotoStatus = LoadUserPhotoStatus.initial,
     this.photoUrl = '',
     this.formStatus = FormzStatus.valid,
     this.error = '',
@@ -19,7 +19,7 @@ class EditProfileState extends Equatable {
 
   final Text displayName;
   final String description;
-  final LoadPhotoStatus loadPhotoStatus;
+  final LoadUserPhotoStatus loadPhotoStatus;
   final String photoUrl;
   final FormzStatus formStatus;
   final String error;
@@ -31,7 +31,7 @@ class EditProfileState extends Equatable {
   EditProfileState copyWith({
     Text? displayName,
     String? description,
-    LoadPhotoStatus? loadPhotoStatus,
+    LoadUserPhotoStatus? loadPhotoStatus,
     String? photoUrl,
     FormzStatus? formStatus,
     String? error,

@@ -8,12 +8,12 @@ class ProfileCubit extends Cubit<ProfileState> {
   ProfileCubit({
     required this.usersService,
     required this.authService,
-    required this.tripsServices,
+    required this.tripsService,
   }) : super(const ProfileState());
 
   final UsersService usersService;
   final AuthService authService;
-  final TripsService tripsServices;
+  final TripsService tripsService;
 
   Future<void> getFollowers(String userId) async {
     emit(state.copyWith(
@@ -81,7 +81,7 @@ class ProfileCubit extends Cubit<ProfileState> {
   Future<void> likeTrip(String tripId, String userId) async {
     try {
       emit(state.copyWith(likesStatus: LikesStatus.loadInProgress));
-      await tripsServices.likeTrip(tripId, userId);
+      await tripsService.likeTrip(tripId, userId);
       emit(state.copyWith(likesStatus: LikesStatus.done));
     } catch (error) {
       throw Exception(error);
@@ -91,7 +91,7 @@ class ProfileCubit extends Cubit<ProfileState> {
   Future<void> dislikeTrip(String tripId, String userId) async {
     try {
       emit(state.copyWith(likesStatus: LikesStatus.loadInProgress));
-      await tripsServices.dislikeTrip(tripId, userId);
+      await tripsService.dislikeTrip(tripId, userId);
       emit(state.copyWith(likesStatus: LikesStatus.done));
     } catch (error) {
       throw Exception(error);
@@ -101,7 +101,7 @@ class ProfileCubit extends Cubit<ProfileState> {
   Future<void> addFavoriteTrip(String tripId, String userId) async {
     try {
       emit(state.copyWith(favoritesStatus: FavoritesStatus.loadInProgress));
-      await tripsServices.addFavoriteTrip(tripId, userId);
+      await tripsService.addFavoriteTrip(tripId, userId);
       emit(state.copyWith(favoritesStatus: FavoritesStatus.done));
     } catch (error) {
       throw Exception(error);
@@ -111,8 +111,16 @@ class ProfileCubit extends Cubit<ProfileState> {
   Future<void> deleteFavoriteTrip(String tripId, String userId) async {
     try {
       emit(state.copyWith(favoritesStatus: FavoritesStatus.loadInProgress));
-      await tripsServices.deleteFavoriteTrip(tripId, userId);
+      await tripsService.deleteFavoriteTrip(tripId, userId);
       emit(state.copyWith(favoritesStatus: FavoritesStatus.done));
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<void> deleteTrip(String id) async {
+    try {
+      await tripsService.deleteTrip(id);
     } catch (error) {
       throw Exception(error);
     }

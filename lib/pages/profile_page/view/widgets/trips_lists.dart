@@ -123,6 +123,50 @@ class _TripList extends StatelessWidget {
               cost: trip.cost,
               imageUrl: trip.imageUrl,
               isFavorite: trip.isFavorite,
+              ownerMenu: authUser.id == trip.user.userId
+                  ? Container(
+                      alignment: Alignment.centerRight,
+                      child: CupertinoButton(
+                        padding: EdgeInsets.all(0),
+                        child: const Icon(
+                          CupertinoIcons.ellipsis,
+                          color: CupertinoColors.systemGrey,
+                        ),
+                        onPressed: () {
+                          showCupertinoModalPopup<void>(
+                            context: context,
+                            builder: (BuildContext context) =>
+                                CupertinoActionSheet(
+                              actions: <CupertinoActionSheetAction>[
+                                CupertinoActionSheetAction(
+                                  child: const Text('Edit trip'),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    Navigator.of(context)
+                                        .push(TripEditorPage.route(trip: trip));
+                                  },
+                                ),
+                                CupertinoActionSheetAction(
+                                  child: const Text(
+                                    'Delete trip',
+                                    style: TextStyle(
+                                      color: CupertinoColors.systemRed,
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    ctx
+                                        .read<ProfileCubit>()
+                                        .deleteTrip(trip.id);
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  : Container(),
               isFavoriteUpdating:
                   favoritesStatus == FavoritesStatus.loadInProgress,
               onLikePress: () {

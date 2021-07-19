@@ -18,7 +18,7 @@ class FollowingTripsPage extends StatelessWidget {
 
   final String userId;
   final UsersService _usersService = UsersService();
-  final TripsService _tripsServices = TripsService();
+  final TripsService _tripsService = TripsService();
 
   @override
   Widget build(BuildContext context) {
@@ -30,10 +30,10 @@ class FollowingTripsPage extends StatelessWidget {
         create: (_) => FollowingTripsCubit(
           usersService: _usersService,
           authService: context.read<AuthService>(),
-          tripsServices: _tripsServices,
+          tripsService: _tripsService,
         ),
         child: Center(
-          child: TripsList(tripsServices: _tripsServices, userId: userId),
+          child: TripsList(tripsService: _tripsService, userId: userId),
         ),
       ),
     );

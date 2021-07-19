@@ -34,19 +34,19 @@ class EditProfileCubit extends Cubit<EditProfileState> {
   }
 
   Future<void> updateUserPhoto(String userId, File photo) async {
-    emit(state.copyWith(loadPhotoStatus: LoadPhotoStatus.loadInProgress));
+    emit(state.copyWith(loadPhotoStatus: LoadUserPhotoStatus.loadInProgress));
     try {
       final photoUrl = await usersService.updateUserPhoto(userId, photo);
       emit(
         state.copyWith(
-          loadPhotoStatus: LoadPhotoStatus.loadSuccess,
+          loadPhotoStatus: LoadUserPhotoStatus.loadSuccess,
           photoUrl: photoUrl,
         ),
       );
     } catch (error) {
       emit(
         state.copyWith(
-          loadPhotoStatus: LoadPhotoStatus.loadFailure,
+          loadPhotoStatus: LoadUserPhotoStatus.loadFailure,
           error: error.toString(),
         ),
       );

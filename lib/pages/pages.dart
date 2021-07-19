@@ -6,3 +6,4 @@ export 'login_page/login_page.dart';
 export 'sign_up_page/sign_up_page.dart';
 export 'profile_page/profile_page.dart';
 export 'search_page/search_page.dart';
+export 'trip_editor_page/trip_editor_page.dart';

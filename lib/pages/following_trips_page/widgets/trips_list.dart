@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:trips/blocs/blocs.dart';
 import 'package:trips/services/services.dart';
 import 'package:trips/pages/pages.dart';
 import 'package:trips/widgets/widgets.dart';
@@ -7,11 +8,11 @@ import 'package:trips/widgets/widgets.dart';
 class TripsList extends StatelessWidget {
   TripsList({
     Key? key,
-    required this.tripsServices,
+    required this.tripsService,
     required this.userId,
   }) : super(key: key);
 
-  final TripsService tripsServices;
+  final TripsService tripsService;
   final String userId;
 
   @override
@@ -24,7 +25,7 @@ class TripsList extends StatelessWidget {
       builder: (ctx, state) {
         return _TripList(
           userId: userId,
-          stream: tripsServices.getFollowingTrips(userId),
+          stream: tripsService.getFollowingTrips(userId),
         );
       },
     );
@@ -47,6 +48,7 @@ class _TripList extends StatelessWidget {
         context.select((FollowingTripsCubit bloc) => bloc.state.likesStatus);
     final favoritesStatus = context
         .select((FollowingTripsCubit bloc) => bloc.state.favoritesStatus);
+    final authUser = context.select((AuthBloc bloc) => bloc.state.authUser);
 
     return Container(
       child: StreamBuilder<List<Trip>>(
@@ -86,6 +88,50 @@ class _TripList extends StatelessWidget {
                 cost: trip.cost,
                 imageUrl: trip.imageUrl,
                 isFavorite: trip.isFavorite,
+                ownerMenu: authUser.id == trip.user.userId
+                    ? Container(
+                        alignment: Alignment.centerRight,
+                        child: CupertinoButton(
+                          padding: EdgeInsets.all(0),
+                          child: const Icon(
+                            CupertinoIcons.ellipsis,
+                            color: CupertinoColors.systemGrey,
+                          ),
+                          onPressed: () {
+                            showCupertinoModalPopup<void>(
+                              context: context,
+                              builder: (BuildContext context) =>
+                                  CupertinoActionSheet(
+                                actions: <CupertinoActionSheetAction>[
+                                  CupertinoActionSheetAction(
+                                    child: const Text('Edit trip'),
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      Navigator.of(context).push(
+                                          TripEditorPage.route(trip: trip));
+                                    },
+                                  ),
+                                  CupertinoActionSheetAction(
+                                    child: const Text(
+                                      'Delete trip',
+                                      style: TextStyle(
+                                        color: CupertinoColors.systemRed,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      ctx
+                                          .read<FollowingTripsCubit>()
+                                          .deleteTrip(trip.id);
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    : Container(),
                 isFavoriteUpdating:
                     favoritesStatus == UserFavoritesStatus.loadInProgress,
                 onLikePress: () {
