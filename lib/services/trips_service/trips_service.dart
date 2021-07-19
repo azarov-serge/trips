@@ -224,6 +224,65 @@ class TripsService {
     }
   }
 
+  Stream<List<Trip>> getUserTripsDrafts() async* {
+    try {
+      final user = await authUser.first;
+      final snapshots = _tripsCollection
+          .where('userId', isEqualTo: user.id)
+          .where('isPublic', isEqualTo: false)
+          .snapshots();
+
+      await for (final snapshot in snapshots) {
+        final List<User> users = [];
+        final List<Trip> trips = [];
+        final List<String> likeIds = await getLikesIds();
+        final List<String> favoriteIds = await getFavoritesIds(user.id);
+
+        for (int index = 0; index < snapshot.docs.length; index++) {
+          final trip = snapshot.docs[index];
+          final userData = await _usersCollection
+              .where('userId', isEqualTo: trip['userId'])
+              .get();
+
+          final userDoc = userData.docs[0];
+
+          final user = User(
+            userId: userDoc['userId'],
+            email: userDoc['email'],
+            displayName: userDoc['displayName'],
+            photoUrl: userDoc['photoUrl'],
+            description: userDoc['description'],
+          );
+
+          users.add(user);
+
+          final isLiked = isLikedTrip(likeIds, trip.id);
+
+          final isFavorite = isFavoriteTrip(favoriteIds, trip.id);
+
+          trips.add(Trip(
+            id: trip.id,
+            publicationDate: DateTime.fromMillisecondsSinceEpoch(
+                trip['publicationDate'].seconds * 1000),
+            isPublic: trip['isPublic'],
+            title: trip['title'],
+            description: trip['description'],
+            imageUrl: trip['imageUrl'],
+            likesCount: int.parse(trip['likesCount'].toString()),
+            cost: double.parse(trip['cost'].toString()),
+            isLiked: isLiked,
+            isFavorite: isFavorite,
+            user: user,
+          ));
+        }
+
+        yield trips;
+      }
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
   Stream<List<Trip>> getUserFavoritesTrips(String userId) async* {
     try {
       final user = await authUser.first;
