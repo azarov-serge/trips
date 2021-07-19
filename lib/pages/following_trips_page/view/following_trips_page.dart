@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:trips/blocs/blocs.dart';
 import 'package:trips/pages/following_trips_page/widgets/widgets.dart';
 import 'package:trips/services/services.dart';
 import 'package:trips/pages/pages.dart';
