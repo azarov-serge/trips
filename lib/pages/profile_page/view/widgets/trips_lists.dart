@@ -84,6 +84,11 @@ class _TripList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authUser = context.select((AuthBloc bloc) => bloc.state.authUser);
+    final likesStatus =
+        context.select((ProfileCubit bloc) => bloc.state.likesStatus);
+    final favoritesStatus =
+        context.select((ProfileCubit bloc) => bloc.state.favoritesStatus);
+
     return Container(
       margin: EdgeInsets.fromLTRB(0, 20, 0, 100),
       child: StreamBuilder<List<Trip>>(
@@ -113,10 +118,13 @@ class _TripList extends StatelessWidget {
               title: trip.title,
               description: trip.description,
               likesCount: trip.likesCount,
+              isLikesCountUpdating: likesStatus == LikesStatus.loadInProgress,
               isLiked: trip.isLiked,
               cost: trip.cost,
               imageUrl: trip.imageUrl,
               isFavorite: trip.isFavorite,
+              isFavoriteUpdating:
+                  favoritesStatus == FavoritesStatus.loadInProgress,
               onLikePress: () {
                 if (trip.isLiked) {
                   context
