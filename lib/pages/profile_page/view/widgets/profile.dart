@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:trips/blocs/blocs.dart';
 import 'package:trips/services/services.dart';
 import 'package:trips/pages/pages.dart';
@@ -23,7 +22,7 @@ class Profile extends StatelessWidget {
 
     return BlocListener<ProfileCubit, ProfileState>(
       listener: (context, state) {
-        if (state.status == FollowStatus.error) {
+        if (state.followStatus == FollowStatus.error) {
           _showErrorAlert(context, 'Authentication Failure');
         }
       },
@@ -116,19 +115,21 @@ class _FollowButtonState extends State<_FollowButton> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ProfileCubit, ProfileState>(
-      buildWhen: (previous, current) => previous.status != current.status,
+      buildWhen: (previous, current) =>
+          previous.followStatus != current.followStatus,
       builder: (ctx, state) {
-        final following = state.following;
+        final followingIds = state.followingIds;
 
-        final isNotFollowing = following.length > 0
-            ? following.where((id) => id == widget.userId).toList().length == 0
+        final isNotFollowing = followingIds.length > 0
+            ? followingIds.where((id) => id == widget.userId).toList().length ==
+                0
             : true;
 
         return Container(
           margin: EdgeInsets.only(top: 10),
           height: 45,
           width: MediaQuery.of(context).size.width * 0.5,
-          child: state.status != FollowStatus.done
+          child: state.followStatus != FollowStatus.done
               ? CupertinoActivityIndicator()
               : Container(
                   margin: EdgeInsets.only(top: 10),
@@ -227,16 +228,15 @@ class _UserTripsCount extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
+    return StreamBuilder<List<String>>(
       stream: usersService.getTripsIdsByUserId(userId),
       builder: (context, snapshot) {
         String tripsCount = '';
         if (!snapshot.hasData) {
           tripsCount = '-';
         } else {
-          tripsCount = snapshot.data != null
-              ? snapshot.data!.docs.length.toString()
-              : '-';
+          tripsCount =
+              snapshot.data != null ? snapshot.data!.length.toString() : '-';
         }
 
         final tripssWidget = CupertinoButton(
@@ -266,21 +266,17 @@ class _UserFollowersCount extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
+    return StreamBuilder<List<String>>(
       stream: usersService.getFollowersIdsByUserId(userId),
-      builder: (context, snapshot) {
+      builder: (ctx, snapshot) {
         String followersCount;
-        List<String> followersIds = [];
 
         if (!snapshot.hasData) {
           followersCount = '-';
-        } else if (snapshot.data!.docs.length == 0) {
+        } else if (snapshot.data!.length == 0) {
           followersCount = '0';
         } else {
-          followersCount = snapshot.data!.docs.length.toString();
-          snapshot.data!.docs.forEach((doc) {
-            followersIds.add(doc['followerId']);
-          });
+          followersCount = snapshot.data!.length.toString();
         }
 
         final isNeedCallback = followersCount != '-' && followersCount != '0';
@@ -292,7 +288,8 @@ class _UserFollowersCount extends StatelessWidget {
                     Navigator.of(context).push(
                       FollowersPage.route(
                         usersService: usersService,
-                        usersIds: followersIds,
+                        userId: userId,
+                        usersIds: snapshot.data!,
                         title: 'Followers',
                         isFollowers: true,
                         isAuthUser: isAuthUser,
@@ -320,21 +317,17 @@ class _UserFollowingCount extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
+    return StreamBuilder<List<String>>(
       stream: usersService.getFollowingIdsByUserId(userId),
       builder: (context, snapshot) {
         String followingCount;
-        List<String> followingIds = [];
 
         if (!snapshot.hasData) {
           followingCount = '-';
-        } else if (snapshot.data!.docs.length == 0) {
+        } else if (snapshot.data!.length == 0) {
           followingCount = '0';
         } else {
-          followingCount = snapshot.data!.docs.length.toString();
-          snapshot.data!.docs.forEach((doc) {
-            followingIds.add(doc['userId']);
-          });
+          followingCount = snapshot.data!.length.toString();
         }
 
         final isNeedCallback = followingCount != '-' && followingCount != '0';
@@ -346,7 +339,8 @@ class _UserFollowingCount extends StatelessWidget {
                     Navigator.of(context).push(
                       FollowersPage.route(
                         usersService: usersService,
-                        usersIds: followingIds,
+                        userId: userId,
+                        usersIds: snapshot.data!,
                         title: 'Following',
                         isAuthUser: isAuthUser,
                       ),

@@ -2,26 +2,34 @@ import 'package:flutter/cupertino.dart';
 import 'package:trips/widgets/widgets.dart';
 
 class TripCard extends StatelessWidget {
+  final String id;
   final String userName;
   final String userPic;
   final DateTime publicationDate;
   final String title;
   final String description;
   final int likesCount;
+  final bool isLiked;
   final double cost;
   final String imageUrl;
   final bool isFavorite;
+  final Function onLikePress;
+  final Function onFavoritePress;
 
   const TripCard({
+    required this.id,
     required this.userName,
     required this.userPic,
     required this.publicationDate,
     required this.title,
     required this.description,
     required this.likesCount,
+    required this.isLiked,
     required this.cost,
     required this.imageUrl,
     required this.isFavorite,
+    required this.onLikePress,
+    required this.onFavoritePress,
   });
 
   @override
@@ -53,8 +61,11 @@ class TripCard extends StatelessWidget {
           ),
           _TripCardPanel(
             likesCount: likesCount,
+            isLiked: isLiked,
             cost: cost,
             isFavorite: isFavorite,
+            onLikePress: onLikePress,
+            onFavoritePress: onFavoritePress,
           ),
         ],
       ),
@@ -171,13 +182,19 @@ class _TripCardBody extends StatelessWidget {
 class _TripCardPanel extends StatelessWidget {
   _TripCardPanel({
     required this.likesCount,
+    required this.isLiked,
     required this.cost,
     required this.isFavorite,
+    required this.onLikePress,
+    required this.onFavoritePress,
   });
 
   final int likesCount;
+  final bool isLiked;
   final double cost;
   final bool isFavorite;
+  final Function onLikePress;
+  final Function onFavoritePress;
 
   @override
   Widget build(BuildContext context) {
@@ -193,10 +210,11 @@ class _TripCardPanel extends StatelessWidget {
           ],
         ),
         CupertinoButton(
-            child: isFavorite
-                ? Icon(CupertinoIcons.bookmark_fill)
-                : Icon(CupertinoIcons.bookmark),
-            onPressed: () {})
+          child: isFavorite
+              ? Icon(CupertinoIcons.bookmark_fill)
+              : Icon(CupertinoIcons.bookmark),
+          onPressed: () => onFavoritePress(),
+        )
       ],
     );
   }
@@ -204,16 +222,19 @@ class _TripCardPanel extends StatelessWidget {
   Widget _buildLikesCount(BuildContext context) {
     return Row(
       children: [
-        likesCount > 0
-            ? Icon(
-                CupertinoIcons.heart_fill,
-                color: CupertinoColors.systemRed,
-              )
-            : Icon(
-                CupertinoIcons.heart,
-                color: CupertinoColors.systemRed,
-              ),
-        const SizedBox(width: 5),
+        CupertinoButton(
+          padding: EdgeInsets.all(0),
+          child: isLiked
+              ? Icon(
+                  CupertinoIcons.heart_fill,
+                  color: CupertinoColors.systemRed,
+                )
+              : Icon(
+                  CupertinoIcons.heart,
+                  color: CupertinoColors.systemRed,
+                ),
+          onPressed: () => onLikePress(),
+        ),
         Text(likesCount.toString()),
       ],
     );

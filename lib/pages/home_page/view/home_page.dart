@@ -31,17 +31,16 @@ class HomePage extends StatelessWidget {
         ],
       ),
       tabBuilder: (BuildContext context, int index) {
+        final authUser = context.select((AuthBloc bloc) => bloc.state.authUser);
+
         switch (index) {
           case 0:
-            return _buildSplashPage(context, 'Home');
+            return FollowingTripsPage(userId: authUser.id);
           case 1:
             return SearchPage();
           case 2:
             return _buildSplashPage(context, 'Add trip');
           case 3:
-            final authUser =
-                context.select((AuthBloc bloc) => bloc.state.authUser);
-
             return ProfilePage(userId: authUser.id);
           default:
             return _buildSplashPage(context, 'Home');

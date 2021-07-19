@@ -2,30 +2,53 @@ part of 'profile_cubit.dart';
 
 enum FollowStatus {
   initial,
-  followInProgress,
+  loadInProgress,
+  done,
+  error,
+}
+
+enum LikesStatus {
+  initial,
+  loadInProgress,
+  done,
+  error,
+}
+
+enum FavoritesStatus {
+  initial,
+  loadInProgress,
   done,
   error,
 }
 
 class ProfileState extends Equatable {
   const ProfileState({
-    this.status = FollowStatus.initial,
-    this.following = const [],
+    this.followStatus = FollowStatus.initial,
+    this.followingIds = const [],
+    this.likesStatus = LikesStatus.initial,
+    this.favoritesStatus = FavoritesStatus.initial,
   });
 
-  final FollowStatus status;
-  final List following;
+  final FollowStatus followStatus;
+  final List<String> followingIds;
+  final LikesStatus likesStatus;
+  final FavoritesStatus favoritesStatus;
 
   @override
-  List<Object> get props => [status, following];
+  List<Object> get props =>
+      [followStatus, followingIds, likesStatus, favoritesStatus];
 
   ProfileState copyWith({
-    FollowStatus? status,
-    List? following,
+    FollowStatus? followStatus,
+    LikesStatus? likesStatus,
+    List<String>? followingIds,
+    FavoritesStatus? favoritesStatus,
   }) {
     return ProfileState(
-      status: status ?? this.status,
-      following: following ?? this.following,
+      followStatus: followStatus ?? this.followStatus,
+      followingIds: followingIds ?? this.followingIds,
+      likesStatus: likesStatus ?? this.likesStatus,
+      favoritesStatus: favoritesStatus ?? this.favoritesStatus,
     );
   }
 }

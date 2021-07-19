@@ -8,96 +8,113 @@ class ProfileCubit extends Cubit<ProfileState> {
   ProfileCubit({
     required this.usersService,
     required this.authService,
+    required this.tripsServices,
   }) : super(const ProfileState());
 
   final UsersService usersService;
   final AuthService authService;
+  final TripsService tripsServices;
 
   Future<void> getFollowers(String userId) async {
     emit(state.copyWith(
-      status: FollowStatus.followInProgress,
-      following: state.following,
+      followStatus: FollowStatus.loadInProgress,
     ));
 
     try {
-      final followingData = await authService.following;
+      final List<String> followingIds = await authService.followingIds;
 
-      final following = followingData.docs != null
-          ? followingData.docs.map((doc) => doc['userId']).toList()
-          : [];
-
-      emit(
-        state.copyWith(
-          status: FollowStatus.done,
-          following: following,
-        ),
-      );
+      emit(state.copyWith(
+        followStatus: FollowStatus.done,
+        followingIds: followingIds,
+      ));
     } on Exception {
-      emit(
-        state.copyWith(
-          status: FollowStatus.error,
-          following: state.following,
-        ),
-      );
+      emit(state.copyWith(
+        followStatus: FollowStatus.error,
+      ));
     }
   }
 
   Future<void> follow(String userId, String followerId) async {
     emit(state.copyWith(
-      status: FollowStatus.followInProgress,
-      following: state.following,
+      followStatus: FollowStatus.loadInProgress,
     ));
 
     try {
       await usersService.follow(userId, followerId);
-      final followingData = await authService.following;
+      final List<String> followingIds = await authService.followingIds;
 
-      final following = followingData.docs != null
-          ? followingData.docs.map((doc) => doc['userId']).toList()
-          : [];
-
-      emit(
-        state.copyWith(
-          status: FollowStatus.done,
-          following: following,
-        ),
-      );
+      emit(state.copyWith(
+        followStatus: FollowStatus.done,
+        followingIds: followingIds,
+      ));
     } on Exception {
-      emit(
-        state.copyWith(
-          status: FollowStatus.error,
-          following: state.following,
-        ),
-      );
+      emit(state.copyWith(
+        followStatus: FollowStatus.error,
+      ));
     }
   }
 
   Future<void> unfollow(String userId) async {
     emit(state.copyWith(
-      status: FollowStatus.followInProgress,
-      following: state.following,
+      followStatus: FollowStatus.loadInProgress,
     ));
 
     try {
       await usersService.removeFollowing(userId);
-      final followingData = await authService.following;
+      final List<String> followingIds = await authService.followingIds;
 
-      final following = followingData.docs != null
-          ? followingData.docs.map((doc) => doc['userId']).toList()
-          : [];
       emit(
         state.copyWith(
-          status: FollowStatus.done,
-          following: following,
+          followStatus: FollowStatus.done,
+          followingIds: followingIds,
         ),
       );
     } on Exception {
       emit(
         state.copyWith(
-          status: FollowStatus.error,
-          following: state.following,
+          followStatus: FollowStatus.error,
         ),
       );
+    }
+  }
+
+  Future<void> likeTrip(String tripId, String userId) async {
+    try {
+      emit(state.copyWith(likesStatus: LikesStatus.loadInProgress));
+      await tripsServices.likeTrip(tripId, userId);
+      emit(state.copyWith(likesStatus: LikesStatus.done));
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<void> dislikeTrip(String tripId, String userId) async {
+    try {
+      emit(state.copyWith(likesStatus: LikesStatus.loadInProgress));
+      await tripsServices.dislikeTrip(tripId, userId);
+      emit(state.copyWith(likesStatus: LikesStatus.done));
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<void> addFavoriteTrip(String tripId, String userId) async {
+    try {
+      emit(state.copyWith(favoritesStatus: FavoritesStatus.loadInProgress));
+      await tripsServices.addFavoriteTrip(tripId, userId);
+      emit(state.copyWith(favoritesStatus: FavoritesStatus.done));
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<void> deleteFavoriteTrip(String tripId, String userId) async {
+    try {
+      emit(state.copyWith(favoritesStatus: FavoritesStatus.loadInProgress));
+      await tripsServices.deleteFavoriteTrip(tripId, userId);
+      emit(state.copyWith(favoritesStatus: FavoritesStatus.done));
+    } catch (error) {
+      throw Exception(error);
     }
   }
 }
