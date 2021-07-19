@@ -38,12 +38,19 @@ class AuthService {
     });
   }
 
-  Future get following async {
+  Future<List<String>> get followingIds async {
+    final List<String> ids = [];
     final user = await authUser.first;
 
-    return await _followersCollection
+    final followerData = await _followersCollection
         .where('followerId', isEqualTo: user.id)
         .get();
+
+    followerData.docs.forEach((doc) {
+      ids.add(doc['userId'].toString());
+    });
+
+    return ids;
   }
 
   /// Returns the current cached user.

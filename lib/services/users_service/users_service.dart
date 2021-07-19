@@ -18,7 +18,7 @@ class UsersService {
   CollectionReference get _tripsCollection =>
       _firebaseFirestore.collection('trips');
 
-  CollectionReference get _follwersCollection =>
+  CollectionReference get _followersCollection =>
       _firebaseFirestore.collection('followers');
 
   /// Get user by id in collection users
@@ -27,20 +27,58 @@ class UsersService {
   }
 
   /// Get user's trips ids by user id in collection trips
-  Stream<QuerySnapshot> getTripsIdsByUserId(String userId) {
-    return _tripsCollection.where('userId', isEqualTo: userId).snapshots();
+  Stream<List<String>> getTripsIdsByUserId(String userId) async* {
+    try {
+      final snapshots =
+          _tripsCollection.where('userId', isEqualTo: userId).snapshots();
+
+      await for (final snapshot in snapshots) {
+        final List<String> ids = [];
+        snapshot.docs.forEach((doc) {
+          ids.add(doc.id);
+        });
+        yield ids;
+      }
+    } catch (error) {
+      throw Exception(error);
+    }
   }
 
   /// Get followers's ids by user id in collection followers
-  Stream<QuerySnapshot> getFollowersIdsByUserId(String userId) {
-    return _follwersCollection.where('userId', isEqualTo: userId).snapshots();
+  Stream<List<String>> getFollowersIdsByUserId(String userId) async* {
+    try {
+      final snapshots =
+          _followersCollection.where('userId', isEqualTo: userId).snapshots();
+
+      await for (final snapshot in snapshots) {
+        final List<String> ids = [];
+        snapshot.docs.forEach((doc) {
+          ids.add(doc['followerId'].toString());
+        });
+        yield ids;
+      }
+    } catch (error) {
+      throw Exception(error);
+    }
   }
 
   /// Get following's ids by user id in collection following
-  Stream<QuerySnapshot> getFollowingIdsByUserId(String userId) {
-    return _follwersCollection
-        .where('followerId', isEqualTo: userId)
-        .snapshots();
+  Stream<List<String>> getFollowingIdsByUserId(String userId) async* {
+    try {
+      final snapshots = _followersCollection
+          .where('followerId', isEqualTo: userId)
+          .snapshots();
+
+      await for (final snapshot in snapshots) {
+        final List<String> ids = [];
+        snapshot.docs.forEach((doc) {
+          ids.add(doc['userId'].toString());
+        });
+        yield ids;
+      }
+    } catch (error) {
+      throw Exception(error);
+    }
   }
 
   /// Get following's list by user id in collection following
@@ -48,15 +86,97 @@ class UsersService {
     return _usersCollection.where('userId', whereIn: usersIds).snapshots();
   }
 
+  Future<List<String>> getFollowersIds(String userId) async {
+    try {
+      final List<String> ids = [];
+      final data =
+          await _followersCollection.where('userId', isEqualTo: userId).get();
+
+      data.docs.forEach((doc) {
+        ids.add(doc['followerId']);
+      });
+
+      return ids;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Stream<List<User>> getFollowers(String usersId) async* {
+    try {
+      final usersIds = await getFollowersIds(usersId);
+      final snapshots =
+          _usersCollection.where('userId', whereIn: usersIds).snapshots();
+
+      await for (final snapshot in snapshots) {
+        final List<User> users = [];
+        snapshot.docs.forEach((doc) {
+          users.add(User(
+            userId: doc['userId'],
+            email: doc['email'],
+            displayName: doc['displayName'],
+            photoUrl: doc['photoUrl'],
+            description: doc['description'],
+          ));
+        });
+
+        yield users;
+      }
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<List<String>> getFollowingIds(String userId) async {
+    try {
+      final List<String> ids = [];
+      final data = await _followersCollection
+          .where('followerId', isEqualTo: userId)
+          .get();
+
+      data.docs.forEach((doc) {
+        ids.add(doc['userId']);
+      });
+
+      return ids;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Stream<List<User>> getFollowing(String usersId) async* {
+    try {
+      final usersIds = await getFollowingIds(usersId);
+      final snapshots =
+          _usersCollection.where('userId', whereIn: usersIds).snapshots();
+
+      await for (final snapshot in snapshots) {
+        final List<User> users = [];
+        snapshot.docs.forEach((doc) {
+          users.add(User(
+            userId: doc['userId'],
+            email: doc['email'],
+            displayName: doc['displayName'],
+            photoUrl: doc['photoUrl'],
+            description: doc['description'],
+          ));
+        });
+
+        yield users;
+      }
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
   /// Remove follower
   Future<void> removeFollower(userId) async {
     try {
-      final data = await _follwersCollection
-          .where('followerId', isEqualTo: userId)
-          .get();
+      final data =
+          await _followersCollection.where('userId', isEqualTo: userId).get();
       final docId = data.docs.first.id;
 
-      await _follwersCollection.doc(docId).delete();
+      await _followersCollection.doc(docId).delete();
     } catch (error) {
       throw Exception(error);
     }
@@ -65,11 +185,12 @@ class UsersService {
   /// Remove following
   Future<void> removeFollowing(userId) async {
     try {
-      final data =
-          await _follwersCollection.where('userId', isEqualTo: userId).get();
+      final data = await _followersCollection
+          .where('followerId', isEqualTo: userId)
+          .get();
       final docId = data.docs.first.id;
 
-      await _follwersCollection.doc(docId).delete();
+      await _followersCollection.doc(docId).delete();
     } catch (error) {
       throw Exception(error);
     }
@@ -111,7 +232,7 @@ class UsersService {
         'followerId': followerId,
       };
 
-      await _follwersCollection.add(followerData);
+      await _followersCollection.add(followerData);
     } catch (error) {
       throw Exception(error);
     }
@@ -132,10 +253,14 @@ class UsersService {
   }
 
   Future<String> getDocIdByUserId(String userId) async {
-    final userData =
-        await _usersCollection.where('userId', isEqualTo: userId).get();
+    try {
+      final userData =
+          await _usersCollection.where('userId', isEqualTo: userId).get();
 
-    return userData.docs.first.id;
+      return userData.docs.first.id;
+    } catch (error) {
+      throw Exception(error);
+    }
   }
 
   Future<String> updateUserPhoto(String userId, File photo) async {
