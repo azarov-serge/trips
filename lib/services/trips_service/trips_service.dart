@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:meta/meta.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart' as _firebaseAuth_;
 import 'package:cache/cache.dart';
 import 'package:trips/services/services.dart';
@@ -13,6 +15,7 @@ class TripsService {
 
   final FirebaseFirestore _firebaseFirestore = firebaseFirestore;
   final _firebaseAuth_.FirebaseAuth _firebaseAuth = firebaseAuth;
+  final FirebaseStorage _firebaseStorage = firebaseStorage;
   final CacheClient _cache = CacheClient();
 
   /// User cache key.
@@ -423,6 +426,86 @@ class TripsService {
 
       await _favoritesCollection.doc(favoriteDoc.docs[0].id).delete();
       await _tripsCollection.doc(trip.id).update(updatedTrip);
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<String> uploadTripPhoto(File photo) async {
+    try {
+      final fileName =
+          'trip-image-${DateTime.now().millisecondsSinceEpoch.toString()}.jpg';
+      final ref = _firebaseStorage.ref().child('trips_images').child(fileName);
+
+      final res = await ref.putFile(photo);
+      final url = await ref.getDownloadURL();
+
+      final photoUrl = res.metadata != null ? url.toString() : '';
+
+      return photoUrl;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<void> createTrip({
+    required String title,
+    required String description,
+    required String imageUrl,
+    required String cost,
+    bool? isPublic = false,
+  }) async {
+    try {
+      final user = await authUser.first;
+      // Create data
+      final Map<String, dynamic> tripData = {
+        'userId': user.id,
+        'title': title,
+        'description': description,
+        'imageUrl': imageUrl,
+        'cost': double.parse(cost),
+        'favoritesCount': 0,
+        'likesCount': 0,
+        'publicationDate': DateTime.now(),
+        'isPublic': isPublic,
+      };
+
+      await _tripsCollection.add(tripData);
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<void> updateTrip({
+    required String id,
+    required String title,
+    required String description,
+    required String imageUrl,
+    required String cost,
+    bool? isPublic = false,
+  }) async {
+    try {
+      final user = await authUser.first;
+      // Create data
+      final Map<String, dynamic> tripData = {
+        'userId': user.id,
+        'title': title,
+        'description': description,
+        'imageUrl': imageUrl,
+        'cost': double.parse(cost),
+        'publicationDate': DateTime.now(),
+        'isPublic': isPublic,
+      };
+
+      await _tripsCollection.doc(id).update(tripData);
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<void> deleteTrip(String id) async {
+    try {
+      await _tripsCollection.doc(id).delete();
     } catch (error) {
       throw Exception(error);
     }

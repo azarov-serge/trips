@@ -15,6 +15,7 @@ class TripCard extends StatelessWidget {
   final String imageUrl;
   final bool isFavorite;
   final bool? isFavoriteUpdating;
+  final Widget ownerMenu;
   final Function onLikePress;
   final Function onFavoritePress;
 
@@ -32,6 +33,7 @@ class TripCard extends StatelessWidget {
     required this.imageUrl,
     required this.isFavorite,
     this.isFavoriteUpdating,
+    required this.ownerMenu,
     required this.onLikePress,
     required this.onFavoritePress,
   });
@@ -52,6 +54,7 @@ class TripCard extends StatelessWidget {
       ),
       child: Column(
         children: [
+          ownerMenu,
           _TripCardHeader(
             userName: userName,
             userPic: userPic,
@@ -162,6 +165,10 @@ class _TripCardBody extends StatelessWidget {
   }
 
   Widget _buildTripImage(BuildContext context) {
+    if (imageUrl == '') {
+      return Container();
+    }
+
     return Image.network(
       imageUrl,
       loadingBuilder: (BuildContext context, Widget child,
