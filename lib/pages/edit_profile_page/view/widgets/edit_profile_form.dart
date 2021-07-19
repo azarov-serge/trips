@@ -116,20 +116,21 @@ class _UserPicEditorState extends State<_UserPicEditor> {
               Container(
                 height: _size,
                 width: _size,
-                child: state.loadPhotoStatus == LoadPhotoStatus.loadInProgress
-                    ? CupertinoActivityIndicator()
-                    : UserPic(
-                        url: state.photoUrl != ''
-                            ? state.photoUrl
-                            : widget.user.photoUrl ?? '',
-                        size: _size,
-                      ),
+                child:
+                    state.loadPhotoStatus == LoadUserPhotoStatus.loadInProgress
+                        ? CupertinoActivityIndicator()
+                        : UserPic(
+                            url: state.photoUrl != ''
+                                ? state.photoUrl
+                                : widget.user.photoUrl ?? '',
+                            size: _size,
+                          ),
               ),
               SizedBox(height: 10),
               CupertinoButton(
                 child: Text('Edit user\'s photo'),
                 onPressed:
-                    state.loadPhotoStatus == LoadPhotoStatus.loadInProgress
+                    state.loadPhotoStatus == LoadUserPhotoStatus.loadInProgress
                         ? null
                         : () async {
                             await _onImageButtonPressed();
@@ -228,7 +229,7 @@ class _DescriptionInputState extends State<_DescriptionInput> {
   Widget build(BuildContext context) {
     return BlocBuilder<EditProfileCubit, EditProfileState>(
       buildWhen: (previous, current) =>
-          previous.displayName != current.displayName,
+          previous.description != current.description,
       builder: (context, state) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,

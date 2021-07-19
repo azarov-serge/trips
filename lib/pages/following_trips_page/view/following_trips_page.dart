@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:trips/blocs/blocs.dart';
 import 'package:trips/pages/following_trips_page/widgets/widgets.dart';
 import 'package:trips/services/services.dart';
 import 'package:trips/pages/pages.dart';
@@ -19,7 +18,7 @@ class FollowingTripsPage extends StatelessWidget {
 
   final String userId;
   final UsersService _usersService = UsersService();
-  final TripsService _tripsServices = TripsService();
+  final TripsService _tripsService = TripsService();
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +30,10 @@ class FollowingTripsPage extends StatelessWidget {
         create: (_) => FollowingTripsCubit(
           usersService: _usersService,
           authService: context.read<AuthService>(),
-          tripsServices: _tripsServices,
+          tripsService: _tripsService,
         ),
         child: Center(
-          child: TripsList(tripsServices: _tripsServices, userId: userId),
+          child: TripsList(tripsService: _tripsService, userId: userId),
         ),
       ),
     );

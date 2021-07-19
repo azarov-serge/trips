@@ -20,7 +20,7 @@ class ProfilePage extends StatelessWidget {
 
   final String userId;
   final UsersService _usersService = UsersService();
-  final TripsService _tripsServices = TripsService();
+  final TripsService _tripsService = TripsService();
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +49,7 @@ class ProfilePage extends StatelessWidget {
           create: (_) => ProfileCubit(
             usersService: _usersService,
             authService: context.read<AuthService>(),
-            tripsServices: _tripsServices,
+            tripsService: _tripsService,
           ),
           child: _buildContent(context, user, authUser),
         );
@@ -69,7 +69,7 @@ class ProfilePage extends StatelessWidget {
             child: Profile(usersService: _usersService, user: user),
           ),
           SliverToBoxAdapter(
-            child: TripsLists(tripsServices: _tripsServices, user: user),
+            child: TripsLists(tripsServices: _tripsService, user: user),
           ),
         ],
       ),

@@ -84,6 +84,11 @@ class _TripList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authUser = context.select((AuthBloc bloc) => bloc.state.authUser);
+    final likesStatus =
+        context.select((ProfileCubit bloc) => bloc.state.likesStatus);
+    final favoritesStatus =
+        context.select((ProfileCubit bloc) => bloc.state.favoritesStatus);
+
     return Container(
       margin: EdgeInsets.fromLTRB(0, 20, 0, 100),
       child: StreamBuilder<List<Trip>>(
@@ -113,10 +118,57 @@ class _TripList extends StatelessWidget {
               title: trip.title,
               description: trip.description,
               likesCount: trip.likesCount,
+              isLikesCountUpdating: likesStatus == LikesStatus.loadInProgress,
               isLiked: trip.isLiked,
               cost: trip.cost,
               imageUrl: trip.imageUrl,
               isFavorite: trip.isFavorite,
+              ownerMenu: authUser.id == trip.user.userId
+                  ? Container(
+                      alignment: Alignment.centerRight,
+                      child: CupertinoButton(
+                        padding: EdgeInsets.all(0),
+                        child: const Icon(
+                          CupertinoIcons.ellipsis,
+                          color: CupertinoColors.systemGrey,
+                        ),
+                        onPressed: () {
+                          showCupertinoModalPopup<void>(
+                            context: context,
+                            builder: (BuildContext context) =>
+                                CupertinoActionSheet(
+                              actions: <CupertinoActionSheetAction>[
+                                CupertinoActionSheetAction(
+                                  child: const Text('Edit trip'),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    Navigator.of(context)
+                                        .push(TripEditorPage.route(trip: trip));
+                                  },
+                                ),
+                                CupertinoActionSheetAction(
+                                  child: const Text(
+                                    'Delete trip',
+                                    style: TextStyle(
+                                      color: CupertinoColors.systemRed,
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    ctx
+                                        .read<ProfileCubit>()
+                                        .deleteTrip(trip.id);
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  : Container(),
+              isFavoriteUpdating:
+                  favoritesStatus == FavoritesStatus.loadInProgress,
               onLikePress: () {
                 if (trip.isLiked) {
                   context

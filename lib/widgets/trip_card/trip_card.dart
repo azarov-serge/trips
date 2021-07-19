@@ -9,10 +9,13 @@ class TripCard extends StatelessWidget {
   final String title;
   final String description;
   final int likesCount;
+  final bool? isLikesCountUpdating;
   final bool isLiked;
   final double cost;
   final String imageUrl;
   final bool isFavorite;
+  final bool? isFavoriteUpdating;
+  final Widget ownerMenu;
   final Function onLikePress;
   final Function onFavoritePress;
 
@@ -24,10 +27,13 @@ class TripCard extends StatelessWidget {
     required this.title,
     required this.description,
     required this.likesCount,
+    this.isLikesCountUpdating,
     required this.isLiked,
     required this.cost,
     required this.imageUrl,
     required this.isFavorite,
+    this.isFavoriteUpdating,
+    required this.ownerMenu,
     required this.onLikePress,
     required this.onFavoritePress,
   });
@@ -48,6 +54,7 @@ class TripCard extends StatelessWidget {
       ),
       child: Column(
         children: [
+          ownerMenu,
           _TripCardHeader(
             userName: userName,
             userPic: userPic,
@@ -62,8 +69,10 @@ class TripCard extends StatelessWidget {
           _TripCardPanel(
             likesCount: likesCount,
             isLiked: isLiked,
+            isLikesCountUpdating: isLikesCountUpdating == true,
             cost: cost,
             isFavorite: isFavorite,
+            isFavoriteUpdating: isFavoriteUpdating == true,
             onLikePress: onLikePress,
             onFavoritePress: onFavoritePress,
           ),
@@ -156,6 +165,10 @@ class _TripCardBody extends StatelessWidget {
   }
 
   Widget _buildTripImage(BuildContext context) {
+    if (imageUrl == '') {
+      return Container();
+    }
+
     return Image.network(
       imageUrl,
       loadingBuilder: (BuildContext context, Widget child,
@@ -183,16 +196,20 @@ class _TripCardPanel extends StatelessWidget {
   _TripCardPanel({
     required this.likesCount,
     required this.isLiked,
+    required this.isLikesCountUpdating,
     required this.cost,
     required this.isFavorite,
+    required this.isFavoriteUpdating,
     required this.onLikePress,
     required this.onFavoritePress,
   });
 
   final int likesCount;
   final bool isLiked;
+  final bool isLikesCountUpdating;
   final double cost;
   final bool isFavorite;
+  final bool isFavoriteUpdating;
   final Function onLikePress;
   final Function onFavoritePress;
 
@@ -210,9 +227,11 @@ class _TripCardPanel extends StatelessWidget {
           ],
         ),
         CupertinoButton(
-          child: isFavorite
-              ? Icon(CupertinoIcons.bookmark_fill)
-              : Icon(CupertinoIcons.bookmark),
+          child: isFavoriteUpdating
+              ? CupertinoActivityIndicator()
+              : isFavorite
+                  ? Icon(CupertinoIcons.bookmark_fill)
+                  : Icon(CupertinoIcons.bookmark),
           onPressed: () => onFavoritePress(),
         )
       ],
@@ -224,15 +243,17 @@ class _TripCardPanel extends StatelessWidget {
       children: [
         CupertinoButton(
           padding: EdgeInsets.all(0),
-          child: isLiked
-              ? Icon(
-                  CupertinoIcons.heart_fill,
-                  color: CupertinoColors.systemRed,
-                )
-              : Icon(
-                  CupertinoIcons.heart,
-                  color: CupertinoColors.systemRed,
-                ),
+          child: isLikesCountUpdating
+              ? CupertinoActivityIndicator()
+              : isLiked
+                  ? Icon(
+                      CupertinoIcons.heart_fill,
+                      color: CupertinoColors.systemRed,
+                    )
+                  : Icon(
+                      CupertinoIcons.heart,
+                      color: CupertinoColors.systemRed,
+                    ),
           onPressed: () => onLikePress(),
         ),
         Text(likesCount.toString()),

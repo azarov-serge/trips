@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trips/blocs/blocs.dart';
+import 'package:trips/pages/drafts_trips_page/view/drafts_trips_page.dart';
 import 'package:trips/pages/pages.dart';
-import 'package:trips/widgets/widgets.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -39,36 +39,13 @@ class HomePage extends StatelessWidget {
           case 1:
             return SearchPage();
           case 2:
-            return _buildSplashPage(context, 'Add trip');
+            return DraftsTripsPage();
           case 3:
             return ProfilePage(userId: authUser.id);
           default:
-            return _buildSplashPage(context, 'Home');
+            return FollowingTripsPage(userId: authUser.id);
         }
       },
-    );
-  }
-
-  // TODO: Remove
-  Widget _buildSplashPage(BuildContext context, String pageName) {
-    return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: Text(pageName),
-        trailing: CupertinoButton(
-          padding: EdgeInsets.all(5),
-          child: Text('Log out'),
-          onPressed: () {
-            context.read<AuthBloc>().add(AuthEventLogoutRequested());
-          },
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const SizedBox(width: 200, child: TripsLoader()),
-        ],
-      ),
     );
   }
 }
