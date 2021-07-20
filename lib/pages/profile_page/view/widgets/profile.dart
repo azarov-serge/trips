@@ -39,7 +39,7 @@ class Profile extends StatelessWidget {
                   children: [
                     UserPic(
                       url: user.photoUrl ?? '',
-                      size: MediaQuery.of(context).size.width * 0.35,
+                      size: MediaQuery.of(context).size.width * 0.25,
                     ),
                     Column(
                       children: [
