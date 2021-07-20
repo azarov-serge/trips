@@ -108,7 +108,7 @@ class _FollowButton extends StatefulWidget {
 class _FollowButtonState extends State<_FollowButton> {
   @override
   void initState() {
-    context.read<ProfileCubit>().getFollowers(widget.followerId);
+    context.read<ProfileCubit>().getFollowers();
     super.initState();
   }
 
@@ -124,7 +124,7 @@ class _FollowButtonState extends State<_FollowButton> {
             ? followingIds.where((id) => id == widget.userId).toList().length ==
                 0
             : true;
-
+        print(followingIds);
         return Container(
           margin: EdgeInsets.only(top: 10),
           height: 45,
@@ -145,9 +145,7 @@ class _FollowButtonState extends State<_FollowButton> {
                     ),
                     onPressed: () {
                       if (isNotFollowing) {
-                        context
-                            .read<ProfileCubit>()
-                            .follow(widget.userId, widget.followerId);
+                        context.read<ProfileCubit>().follow(widget.userId);
                       } else {
                         context.read<ProfileCubit>().unfollow(widget.userId);
                       }
@@ -272,7 +270,7 @@ class _UserFollowersCount extends StatelessWidget {
         String followersCount;
 
         if (!snapshot.hasData) {
-          followersCount = '-';
+          followersCount = '0';
         } else if (snapshot.data!.length == 0) {
           followersCount = '0';
         } else {
@@ -289,7 +287,6 @@ class _UserFollowersCount extends StatelessWidget {
                       FollowersPage.route(
                         usersService: usersService,
                         userId: userId,
-                        usersIds: snapshot.data!,
                         title: 'Followers',
                         isFollowers: true,
                         isAuthUser: isAuthUser,
@@ -323,7 +320,7 @@ class _UserFollowingCount extends StatelessWidget {
         String followingCount;
 
         if (!snapshot.hasData) {
-          followingCount = '-';
+          followingCount = '0';
         } else if (snapshot.data!.length == 0) {
           followingCount = '0';
         } else {
@@ -340,7 +337,6 @@ class _UserFollowingCount extends StatelessWidget {
                       FollowersPage.route(
                         usersService: usersService,
                         userId: userId,
-                        usersIds: snapshot.data!,
                         title: 'Following',
                         isAuthUser: isAuthUser,
                       ),

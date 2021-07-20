@@ -9,7 +9,6 @@ class FollowersPage extends StatelessWidget {
     Key? key,
     required this.usersService,
     required this.userId,
-    required this.usersIds,
     required this.title,
     this.isFollowers = false,
     this.isAuthUser = false,
@@ -18,7 +17,6 @@ class FollowersPage extends StatelessWidget {
   static Page page({
     required UsersService usersService,
     required String userId,
-    required List<String> usersIds,
     required String title,
     bool? isFollowers,
     bool? isAuthUser,
@@ -27,7 +25,6 @@ class FollowersPage extends StatelessWidget {
         child: FollowersPage(
           usersService: usersService,
           userId: userId,
-          usersIds: usersIds,
           title: title,
           isFollowers: isFollowers,
           isAuthUser: isAuthUser,
@@ -37,7 +34,6 @@ class FollowersPage extends StatelessWidget {
   static Route route({
     required UsersService usersService,
     required String userId,
-    required List<String> usersIds,
     required String title,
     bool? isFollowers,
     bool? isAuthUser,
@@ -46,7 +42,6 @@ class FollowersPage extends StatelessWidget {
       builder: (_) => FollowersPage(
         usersService: usersService,
         userId: userId,
-        usersIds: usersIds,
         title: title,
         isFollowers: isFollowers,
         isAuthUser: isAuthUser,
@@ -56,7 +51,6 @@ class FollowersPage extends StatelessWidget {
 
   final UsersService usersService;
   final String userId;
-  final List<String> usersIds;
   final String title;
   final bool? isFollowers;
   final bool? isAuthUser;
@@ -97,7 +91,8 @@ class FollowersPage extends StatelessWidget {
 
                 return isAuthUser == true
                     ? Dismissible(
-                        key: Key(user.userId),
+                        key: Key(
+                            '${isFollowers == true ? 'followers' : 'following'}${user.userId}'),
                         direction: DismissDirection.endToStart,
                         child: Container(
                           child: followerWidget,
@@ -157,9 +152,10 @@ class FollowersPage extends StatelessWidget {
 
   Future<void> _removeUser(String removedUserId) async {
     if (isFollowers == true && isAuthUser == true) {
-      await usersService.removeFollower(userId);
+      await usersService.removeFollower(removedUserId);
     } else {
-      await usersService.removeFollowing(userId);
+      print(removedUserId);
+      await usersService.removeFollowing(removedUserId);
     }
   }
 }

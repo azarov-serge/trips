@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:meta/meta.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -8,6 +9,16 @@ import 'package:firebase_auth/firebase_auth.dart' as _firebaseAuth_;
 import 'package:cache/cache.dart';
 import 'package:trips/services/services.dart';
 import 'package:trips/services/trips_service/models/trip.dart';
+
+User parseUser(doc) {
+  return User(
+    userId: doc['userId'],
+    email: doc['email'],
+    displayName: doc['displayName'],
+    photoUrl: doc['photoUrl'],
+    description: doc['description'],
+  );
+}
 
 /// Service which manages trips.
 class TripsService {
@@ -109,6 +120,15 @@ class TripsService {
         : favoriteIds.where((favoriteId) => favoriteId == tripId).length > 0;
   }
 
+  Future<User> getUser(String userId) async {
+    final userData =
+        await _usersCollection.where('userId', isEqualTo: userId).get();
+
+    final doc = userData.docs[0];
+    return compute(parseUser, doc);
+    // return parseUser(doc);
+  }
+
   Stream<List<Trip>> getFollowingTrips(String userId) async* {
     try {
       final user = await authUser.first;
@@ -119,46 +139,20 @@ class TripsService {
           .snapshots();
 
       await for (final snapshot in snapshots) {
-        final List<User> users = [];
         final List<Trip> trips = [];
         final List<String> likeIds = await getLikesIds();
         final List<String> favoriteIds = await getFavoritesIds(user.id);
 
         for (int index = 0; index < snapshot.docs.length; index++) {
           final trip = snapshot.docs[index];
-          final userData = await _usersCollection
-              .where('userId', isEqualTo: trip['userId'])
-              .get();
 
-          final userDoc = userData.docs[0];
-
-          final user = User(
-            userId: userDoc['userId'],
-            email: userDoc['email'],
-            displayName: userDoc['displayName'],
-            photoUrl: userDoc['photoUrl'],
-            description: userDoc['description'],
-          );
-
-          users.add(user);
+          final user = await getUser(trip['userId']);
 
           final isLiked = isLikedTrip(likeIds, trip.id);
           final isFavorite = isFavoriteTrip(favoriteIds, trip.id);
 
-          trips.add(Trip(
-            id: trip.id,
-            publicationDate: DateTime.fromMillisecondsSinceEpoch(
-                trip['publicationDate'].seconds * 1000),
-            isPublic: trip['isPublic'],
-            title: trip['title'],
-            description: trip['description'],
-            imageUrl: trip['imageUrl'],
-            likesCount: int.parse(trip['likesCount'].toString()),
-            cost: double.parse(trip['cost'].toString()),
-            isLiked: isLiked,
-            isFavorite: isFavorite,
-            user: user,
-          ));
+          trips.add(Trip.fromDoc(
+              doc: trip, isLiked: isLiked, isFavorite: isFavorite, user: user));
         }
 
         yield trips;
@@ -296,8 +290,6 @@ class TripsService {
         final List<String> authFavoriteIds = await getFavoritesIds(user.id);
         final List<String> favoriteIds = await getFavoritesIds(userId);
         final List<String> likeIds = await getLikesIds();
-
-        final List<User> users = [];
         final List<Trip> trips = [];
 
         for (int index = 0; index < snapshot.docs.length; index++) {
@@ -317,8 +309,6 @@ class TripsService {
             photoUrl: userDoc['photoUrl'],
             description: userDoc['description'],
           );
-
-          users.add(user);
 
           final isLiked = isLikedTrip(likeIds, trip.id);
 
