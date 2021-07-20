@@ -15,7 +15,7 @@ class ProfileCubit extends Cubit<ProfileState> {
   final AuthService authService;
   final TripsService tripsService;
 
-  Future<void> getFollowers(String userId) async {
+  Future<void> getFollowers() async {
     emit(state.copyWith(
       followStatus: FollowStatus.loadInProgress,
     ));
@@ -34,13 +34,13 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
   }
 
-  Future<void> follow(String userId, String followerId) async {
+  Future<void> follow(String followerId) async {
     emit(state.copyWith(
       followStatus: FollowStatus.loadInProgress,
     ));
 
     try {
-      await usersService.follow(userId, followerId);
+      await usersService.follow(followerId);
       final List<String> followingIds = await authService.followingIds;
 
       emit(state.copyWith(

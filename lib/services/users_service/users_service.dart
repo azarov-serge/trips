@@ -1,9 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+import 'package:meta/meta.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:trips/services/services.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart' as _firebaseAuth_;
+import 'package:cache/cache.dart';
 
 /// Service which manages users.
 class UsersService {
@@ -11,6 +15,11 @@ class UsersService {
 
   final FirebaseFirestore _firebaseFirestore = firebaseFirestore;
   final FirebaseStorage _firebaseStorage = firebaseStorage;
+  final _firebaseAuth_.FirebaseAuth _firebaseAuth = firebaseAuth;
+  final CacheClient _cache = CacheClient();
+
+  @visibleForTesting
+  static const userCacheKey = '__user_cache_key__';
 
   CollectionReference get _usersCollection =>
       _firebaseFirestore.collection('users');
@@ -20,6 +29,15 @@ class UsersService {
 
   CollectionReference get _followersCollection =>
       _firebaseFirestore.collection('followers');
+
+  Stream<AuthUser> get authUser {
+    return _firebaseAuth.authStateChanges().map((firebaseUser) {
+      final user =
+          firebaseUser == null ? AuthUser.empty : firebaseUser.toAuthUser;
+      _cache.write(key: userCacheKey, value: user);
+      return user;
+    });
+  }
 
   /// Get user by id in collection users
   Stream<QuerySnapshot> getUserByUserId(String userId) {
@@ -172,8 +190,9 @@ class UsersService {
   /// Remove follower
   Future<void> removeFollower(userId) async {
     try {
-      final data =
-          await _followersCollection.where('userId', isEqualTo: userId).get();
+      final data = await _followersCollection
+          .where('followerId', isEqualTo: userId)
+          .get();
       final docId = data.docs.first.id;
 
       await _followersCollection.doc(docId).delete();
@@ -185,9 +204,8 @@ class UsersService {
   /// Remove following
   Future<void> removeFollowing(userId) async {
     try {
-      final data = await _followersCollection
-          .where('followerId', isEqualTo: userId)
-          .get();
+      final data =
+          await _followersCollection.where('userId', isEqualTo: userId).get();
       final docId = data.docs.first.id;
 
       await _followersCollection.doc(docId).delete();
@@ -224,12 +242,13 @@ class UsersService {
   }
 
   /// Follow user
-  Future<void> follow(String userId, String followerId) async {
+  Future<void> follow(String userId) async {
     try {
+      final user = await authUser.first;
       // Create data
       final followerData = <String, String>{
         'userId': userId,
-        'followerId': followerId,
+        'followerId': user.id,
       };
 
       await _followersCollection.add(followerData);
@@ -241,7 +260,7 @@ class UsersService {
   Future<User> getUserData(String userId) async {
     final userData =
         await _usersCollection.where(userId, isEqualTo: userId).get();
-    return userData.docs.first != null
+    return userData.docs.length != 0
         ? User(
             userId: userData.docs.first['userId'],
             email: userData.docs.first['email'],
@@ -297,5 +316,14 @@ class UsersService {
     } catch (error) {
       throw Exception(error);
     }
+  }
+}
+
+extension on _firebaseAuth_.User {
+  AuthUser get toAuthUser {
+    return AuthUser(
+      id: uid,
+      email: email,
+    );
   }
 }

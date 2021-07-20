@@ -44,10 +44,6 @@ class _TripList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final likesStatus =
-        context.select((FollowingTripsCubit bloc) => bloc.state.likesStatus);
-    final favoritesStatus = context
-        .select((FollowingTripsCubit bloc) => bloc.state.favoritesStatus);
     final authUser = context.select((AuthBloc bloc) => bloc.state.authUser);
 
     return Container(
@@ -83,8 +79,6 @@ class _TripList extends StatelessWidget {
                 description: trip.description,
                 likesCount: trip.likesCount,
                 isLiked: trip.isLiked,
-                isLikesCountUpdating:
-                    likesStatus == UserLikesStatus.loadInProgress,
                 cost: trip.cost,
                 imageUrl: trip.imageUrl,
                 isFavorite: trip.isFavorite,
@@ -132,8 +126,6 @@ class _TripList extends StatelessWidget {
                         ),
                       )
                     : Container(),
-                isFavoriteUpdating:
-                    favoritesStatus == UserFavoritesStatus.loadInProgress,
                 onLikePress: () {
                   if (trip.isLiked) {
                     context
